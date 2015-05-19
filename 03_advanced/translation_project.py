@@ -5,87 +5,85 @@ class BioMolecule(object):
     """
     A generic molecule that has basic attributes like id, name and
     mass.
+
+    @type id: int
+    @type name: str
+    @type mass: float
     """
     def __init__(self, id, name, mass=None):
         self._id = id
         self.name = name
         self.mass = mass
 
-    @property
-    def id(self):
-        return self._id
-
-    @property
-    def name(self):
-        return self._name
-    
-    @name.setter
-    def name(self, value):
-        self._name = value
-
-    @property
-    def mass(self):
-        return self._mass
-
-    @mass.setter
-    def mass(self, value):
-        # if self.mass and \
-        #    not isinstance(value, float) or \
-        #    not isinstance(value, int):
-        #     raise Exception("mass must be numeric")
-#        else:
-        self._mass = value
-
+    # 1. Write setter and getter methods for all attributes.
+    #    Use @property decorators as dicussed in the lecture
+    # 2. In the setter methods check for the type of each attribute.
 
 class Polymer(BioMolecule):
     """
     A polymer molecule that has a sequence attribute which is
-    accessible via indexing the object.
+    accessible via indexing the object. 
+
+    @type id: int
+    @type name: str
+    @type sequence: str
+    @type mass: float
     """
     def __init__(self, id, name, sequence, mass=None):
-        super(Polymer, self).__init__(id, name, mass)
+        # 3. Initialize the parent class correctly
         self._sequence = sequence
 
+    
+    # 4. Write getter and setter for sequence, again check for type
+    # 5. run in ipython, instantiate this class, and test it
     def __getitem__(self, value):
+        """
+        Makes the sequence accessible via the indexing operators:
+<        p[10] returns the tenth character in the sequence.
+        """
         return self.sequence[value]
 
     def __setitem__(self, key, value):
+        """
+         Enables changing of sequence characters via the indexing operators.       
+        """
         self.sequence[key] = value
-
-    @property
-    def sequence(self):
-        return self._sequence
-
-    @sequence.setter
-    def sequence(self, value):
-        if not isinstance(value, str):
-            raise Exception("sequence must be a string")
-            # TODO: check for valid nucleotides here
-            self._sequence = value.upper()
-            self.calculate_mass()
 
 
 class MRNA(Polymer):
     def __init__(self, id, name, sequence, mass=None):
-        super(MRNA, self).__init__(id, name, sequence, mass)
-        self.binding = [0]*(len(sequence)/3)
+        # 6. Initialize the parent class correctly
+
+        # 7. Create a list that stores if a ribosome is bound for each
+        # codon (triplet).
+        self.binding = [] # use this attribute for 7.
 
     def calculate_mass(self):
-        self.mass = 0
         NA_mass = {'A': 1.0, 'U': 2.2, 'G':2.1, 'C':1.3}
-        for na in self.sequence:
-            self.mass += NA_mass[na]
-
+        # 8. calculate the mass for the whole sequence
 
 class Protein(Polymer):
-    number_of_proteins = 0
+    """Protein with Polymer features and mass calculation. A global class
+    attribute counts the number of proteins that have been instantiated.
+    
+    A protein can be elongated using the "+" operator:
+    
+    >> protein = Protein(1, "prot", "MVFT")
+    >> protein + "A"
+    >> protein.sequence
+    MVFTA
+
+    
+    
+    """
+    number_of_proteins = 0  # init instance counter
 
     def __init__(self, id, name, sequence, mass=None):
         super(Protein, self).__init__(id, name, sequence, mass)
-        self.number_of_proteins += 1
+        self.__class__.number_of_proteins += 1 #  increase instance counter
+        self.mass = self.calculate_mass()
 
-    def __add__(self, AS):
-        self.sequence += AS 
+    # 9. implement the elongation feature described in the docstring. (__add__)
 
     def calculate_mass(self):
         AA_mass = {'A': 1.0, 'V': 2.9, 'F':3.0}
@@ -94,7 +92,16 @@ class Protein(Polymer):
    
 
 class Ribosome(BioMolecule):
-    """
+    """A ribosome can bind MRNA and translate it. After translation is
+    finished it produces a protein.
+
+    During initiation the ribosome checks if a given MRNA is bound
+    by another ribosome and binds only if position 0 is empty.
+
+    Elongation checks if the next codon is unbound and only elongates
+    if the ribosome can move on. If the ribosome encounters a stop
+    codon ("*") translation terminates. The MRNA is detached from the
+    ribosome and the finished protein is returned.
     """
     code = dict([('UCA','S'), ('UCG','S'), ('UCC','S'), ('UCU','S'),
                  ('UUU','F'), ('UUC','F'), ('UUA','L'), ('UUG','L'),
@@ -115,37 +122,41 @@ class Ribosome(BioMolecule):
 
     def __init__(self, id, name):
         super(Ribosome, self).__init__(id, name)
-        self.bound = False
-        self.position = None
+        self.bound_mrna = False
+        self.position = None  # position on a bound MRNA
 
     def initiate(self, mrna):
-        if not self.bound and not mrna.binding[0]:  #  no mrna bound yet and target mrna still free at pos 0
-            self.bound = mrna
-            self.nascent_prot = Protein(self.bound.id,
-                                        "Protein_{0}".format(self.bound.id),
-                                        "")
+        """
+        Tries to bind to a given MRNA.
+
+        @type mrna: MRNA
+        """
+        if not self.bound_mrna and not mrna.binding[0]:  # no mrna bound
+                                                    # yet and target
+                                                    # mrna still free
+                                                    # at pos 0
+            self.bound_mrna = mrna
+            self.nascent_prot = None  # 10. Instantiate a new Protein
             self.position = 0
-            self.bound.binding[0] = 1
+            self.bound_mrna.binding  # 11. Mark position 0 of MRNA to be bound by ribosome
             
     def elongate(self):
-        if not self.bound: # can't elongate
-            return False
-        codon = self.bound[self.position:self.position+3]
-        aa = self.code[codon]
+        """Elongate the new protein by the correct amino acid. Check if an
+        MRNA is bound and if ribosome can move to next codon.
+        Terminate if the ribosome reaches a STOP codon.
 
-        if aa == "*": # terminate at stop codon
-            return self.terminate()
-            
-        if not self.bound.binding[self.position/3 + 1]: # if the next rna position is free
-            self.bound.binding[self.position/3] = 0
-            self.bound.binding[self.position/3+1] = 1
-            self.position += 3
-            self.nascent_prot + aa
-        return 0
+        @type return: Protein or False
+        """
+        if not self.bound_mrna: # can't elongate because there is no MRNA
+            return False
+
+        # 12. Implement the described features.
 
     def terminate(self):
-        self.bound.binding[self.position/3] = 0 # bound mRNA
-        self.bound = False
+        """
+        Splits the ribosome/MRNA complex and returns a protein.
+        """
+        # 13. Dissociate the complex.
         return self.nascent_prot
         
 
@@ -170,6 +181,9 @@ class Cell(object):
             if p:
                 print [len(x) for x in self.proteins]
             
-if __name__ == "__main__":
-    c = Cell()
-    c.simulate()
+if __name__ == "__main__":  # the following is called if the module is executed
+    # 14. Instantiate the Cell class and call the simulation method.
+    pass
+
+# 15. Generate a set of mRNA sequences to initiate the cell.
+# 16. Implement protein degradation.
