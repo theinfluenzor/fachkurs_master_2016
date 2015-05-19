@@ -3,7 +3,8 @@ import sys
 
 class BioMolecule(object):
     """
-    A generic molecule
+    A generic molecule that has basic attributes like id, name and
+    mass.
     """
     def __init__(self, id, name, mass=None):
         self._id = id
@@ -36,17 +37,20 @@ class BioMolecule(object):
         self._mass = value
 
 
-class MRNA(BioMolecule):
+class Polymer(BioMolecule):
+    """
+    A polymer molecule that has a sequence attribute which is
+    accessible via indexing the object.
+    """
     def __init__(self, id, name, sequence, mass=None):
-        super(MRNA, self).__init__(id, name, mass)
-        self.sequence = sequence
-        self.binding = [0]*len(sequence)
+        super(Polymer, self).__init__(id, name, mass)
+        self._sequence = sequence
 
     def __getitem__(self, value):
-        return self.binding[value]
+        return self.sequence[value]
 
     def __setitem__(self, key, value):
-        self.binding[key] = value
+        self.sequence[key] = value
 
     @property
     def sequence(self):
@@ -56,9 +60,15 @@ class MRNA(BioMolecule):
     def sequence(self, value):
         if not isinstance(value, str):
             raise Exception("sequence must be a string")
-        # TODO: check for valid nucleotides here
-        self._sequence = value.upper()
-        self.calculate_mass()
+            # TODO: check for valid nucleotides here
+            self._sequence = value.upper()
+            self.calculate_mass()
+
+
+class MRNA(Polymer):
+    def __init__(self, id, name, sequence, mass=None):
+        super(MRNA, self).__init__(id, name, sequence, mass)
+        self.binding = [0]*(len(sequence)/3)
 
     def calculate_mass(self):
         self.mass = 0
@@ -67,25 +77,25 @@ class MRNA(BioMolecule):
             self.mass += NA_mass[na]
 
 
-    
-class Protein(BioMolecule):
+class Protein(Polymer):
     number_of_proteins = 0
 
     def __init__(self, id, name, sequence, mass=None):
-        super(Protein, self).__init__(id, name, mass)
-        self.sequence = sequence
+        super(Protein, self).__init__(id, name, sequence, mass)
         self.number_of_proteins += 1
 
     def __add__(self, AS):
         self.sequence += AS 
 
     def calculate_mass(self):
-        AA_mass = {'a': 1.0, 'v': 2.9, 'f':3.0}
+        AA_mass = {'A': 1.0, 'V': 2.9, 'F':3.0}
         for aa in self.sequence:
             self.mass += AA_mass[aa]
    
 
 class Ribosome(BioMolecule):
+    """
+    """
     code = dict([('UCA','S'), ('UCG','S'), ('UCC','S'), ('UCU','S'),
                  ('UUU','F'), ('UUC','F'), ('UUA','L'), ('UUG','L'),
                  ('UAU','Y'), ('UAC','Y'), ('UAA','*'), ('UAG','*'),
@@ -109,32 +119,32 @@ class Ribosome(BioMolecule):
         self.position = None
 
     def initiate(self, mrna):
-        if not self.bound and not mrna[0]:  #  no mrna bound yet and target mrna still free at pos 0
+        if not self.bound and not mrna.binding[0]:  #  no mrna bound yet and target mrna still free at pos 0
             self.bound = mrna
             self.nascent_prot = Protein(self.bound.id,
                                         "Protein_{0}".format(self.bound.id),
-                                        [])
+                                        "")
             self.position = 0
-            self.bound[0] = 1
+            self.bound.binding[0] = 1
             
     def elongate(self):
         if not self.bound: # can't elongate
             return False
-        codon = self.bound.sequence[self.position:self.position+3]
+        codon = self.bound[self.position:self.position+3]
         aa = self.code[codon]
 
         if aa == "*": # terminate at stop codon
             return self.terminate()
             
-        if not self.bound[self.position + 1]: # if the next rna position is free
-            self.bound[self.position] = 0
-            self.bound[self.position+1] = 1
-            self.position += 1
+        if not self.bound.binding[self.position/3 + 1]: # if the next rna position is free
+            self.bound.binding[self.position/3] = 0
+            self.bound.binding[self.position/3+1] = 1
+            self.position += 3
             self.nascent_prot + aa
         return 0
 
     def terminate(self):
-        self.bound[self.position] = 0
+        self.bound.binding[self.position/3] = 0 # bound mRNA
         self.bound = False
         return self.nascent_prot
         
@@ -143,7 +153,7 @@ class Cell(object):
     def __init__(self):
         self.ribosomes = [Ribosome(i, 'Ribo_{0}'.format(i)) for i in xrange(200)]
         self.mrnas = [MRNA(i, 'MRNA_{0}'.format(i), "UUUUUUUUUUAA") for i in xrange(20)]
-        self.proteins = [[] for x in range(20)]
+        self.proteins = [[] for x in xrange(20)]
 
     def step(self):
         for r in self.ribosomes:
