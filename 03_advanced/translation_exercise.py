@@ -61,12 +61,12 @@ class Polymer(BioMolecule):
         if not isinstance(value, str):
             raise Exception("sequence must be a string")
             # TODO: check for valid nucleotides here
-            self._sequence = value.upper()
-            self.calculate_mass()
+        self._sequence = value.upper()
+        self.calculate_mass()
 
 
 class MRNA(Polymer):
-    def __init__(self, id, name, sequence, mass=None):
+    def __init__(self, id, name, sequence, mass=0):
         super(MRNA, self).__init__(id, name, sequence, mass)
         self.binding = [0]*(len(sequence)/3)
 
@@ -80,7 +80,7 @@ class MRNA(Polymer):
 class Protein(Polymer):
     number_of_proteins = 0
 
-    def __init__(self, id, name, sequence, mass=None):
+    def __init__(self, id, name, sequence, mass=0):
         super(Protein, self).__init__(id, name, sequence, mass)
         self.number_of_proteins += 1
 
@@ -88,7 +88,10 @@ class Protein(Polymer):
         self.sequence += AS 
 
     def calculate_mass(self):
-        AA_mass = {'A': 1.0, 'V': 2.9, 'F':3.0}
+        AA_mass = {"A": 89.0929, "R": 175.208, "N": 132.118, "D": 132.094, "C": 121.158, "Q": 146.144,
+                    "E": 146.121, "G": 75.0664, "H":155.154, "I":131.172, "L": 131.172, "K": 147.195,
+                    "M": 149.211, "F": 165.189, "P": 115.13, "S": 105.092, "T": 119.119, "W": 204.225,
+                    "Y":181.188, "V":117.146}
         for aa in self.sequence:
             self.mass += AA_mass[aa]
    
@@ -172,4 +175,4 @@ class Cell(object):
             
 if __name__ == "__main__":
     c = Cell()
-    c.simulate()
+    c.simulate(10)
