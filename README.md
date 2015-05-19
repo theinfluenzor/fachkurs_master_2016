@@ -74,7 +74,7 @@ Before we start the course be sure to look into [this](http://maryrosecook.com/b
 
 In order to take part in the course you should *fork*
 ([more about forking](https://help.github.com/articles/fork-a-repo/))
-this repository and then *clone* it onto your local machine. This will also be your first [excercise task](https://github.com/fugufisch/hu_bp_python_course/00_git/excercise.md). Before
+this repository and then *clone* it onto your local machine. This will also be your first [excercise task](https://github.com/fugufisch/hu_bp_python_course/blob/master/01_git/excercise.md). Before
 you can do this you will need a github account. If you don't have one
 yet you can register now for free. You can also just *clone* the
 repository, but you won't be able to `push` your results back to

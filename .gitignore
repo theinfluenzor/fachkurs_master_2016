@@ -57,3 +57,4 @@ docs/_build/
 target/
 01_introduction/.ipynb_checkpoints
 01_introduction/intro_to_python-Copy0.ipynb
+02_introduction/.ipynb*
