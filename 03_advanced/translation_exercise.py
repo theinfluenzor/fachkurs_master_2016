@@ -6,7 +6,7 @@ class BioMolecule(object):
     A generic molecule that has basic attributes like id, name and
     mass.
     """
-    def __init__(self, id, name, mass=None):
+    def __init__(self, id, name, mass=0):
         self._id = id
         self.name = name
         self.mass = mass
@@ -42,7 +42,7 @@ class Polymer(BioMolecule):
     A polymer molecule that has a sequence attribute which is
     accessible via indexing the object.
     """
-    def __init__(self, id, name, sequence, mass=None):
+    def __init__(self, id, name, sequence, mass=0):
         super(Polymer, self).__init__(id, name, mass)
         self._sequence = sequence
 
