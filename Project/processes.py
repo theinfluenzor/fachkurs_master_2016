@@ -1,4 +1,6 @@
 import random
+import molecules
+
 
 class Process(object):
     """
@@ -24,7 +26,12 @@ class Process(object):
 
 class Translation(Process):
     """
-    Defines Translation process.
+    Translation is instantiated in the Cell to produce proteins.
+
+    Defines Translation process. It iterates over all ribosomes and decides what
+    they should do. They either bind to mRNA or elongate/terminate a protein if
+    they are already bound.
+
     """
     def __init__(self, id, name):
         super(Translation, self).__init__(id, name)
@@ -37,8 +44,8 @@ class Translation(Process):
                 random_mrna = cell.states[self.substrate_ids[random.randint(0,len(self.substrate_ids)-1)]]
                 ribosome.initiate(random_mrna)
             else:
-                prot = ribosome.elongate()
-            if prot:
+                prot = ribosome.elongate
+            if isinstance(prot, molecules.Protein):
                 if prot.id in cell.states:
                     cell.states[prot.id].append(prot)
                 else:

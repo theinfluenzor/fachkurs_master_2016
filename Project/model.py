@@ -22,8 +22,8 @@ class Cell(object):
     def simulate(self, steps, log=True):
         for s in xrange(steps):
             self.step()
-            if log:
-                # print the count of each protein to the screen
+            if log: # This could be an entry point for further logging
+                # print count of each protein to the screen
                 print '\r{}'.format([len(self.states[x]) for x in self.states.keys() if "Protein_" in x]),
             
 if __name__ == "__main__":

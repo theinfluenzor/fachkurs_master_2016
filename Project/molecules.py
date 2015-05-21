@@ -5,6 +5,10 @@ class BioMolecule(object):
     """
     A generic molecule that has basic attributes like id, name and
     mass.
+
+    @type id: int
+    @type name: str
+    @type mass: float
     """
     def __init__(self, id, name, mass=0):
         self._id = id
@@ -33,7 +37,7 @@ class BioMolecule(object):
         #    not isinstance(value, float) or \
         #    not isinstance(value, int):
         #     raise Exception("mass must be numeric")
-#        else:
+        # else:
         self._mass = value
 
 
@@ -41,6 +45,11 @@ class Polymer(BioMolecule):
     """
     A polymer molecule that has a sequence attribute which is
     accessible via indexing the object.
+
+    @type id: int
+    @type name: str
+    @type sequence: str
+    @type mass: float
     """
     def __init__(self, id, name, sequence, mass=0):
         super(Polymer, self).__init__(id, name, mass)
@@ -78,6 +87,20 @@ class MRNA(Polymer):
 
 
 class Protein(Polymer):
+    """
+    Protein with Polymer features and mass calculation. A global class
+    attribute counts the number of proteins that have been instantiated.
+
+    A protein can be elongated using the "+" operator:
+
+    >> protein = Protein(1, "prot", "MVFT")
+    >> protein + "A"
+    >> protein.sequence
+    MVFTA
+
+
+
+    """
     number_of_proteins = 0
 
     def __init__(self, id, name, sequence, mass=0):
@@ -98,6 +121,16 @@ class Protein(Polymer):
 
 class Ribosome(BioMolecule):
     """
+    A ribosome can bind MRNA and translate it. After translation is
+    finished it produces a protein.
+
+    During initiation the ribosome checks if a given MRNA is bound
+    by another ribosome and binds only if position 0 is empty.
+
+    Elongation checks if the next codon is unbound and only elongates
+    if the ribosome can move on. If the ribosome encounters a stop
+    codon ("*") translation terminates. The MRNA is detached from the
+    ribosome and the finished protein is returned.
     """
     code = dict([('UCA','S'), ('UCG','S'), ('UCC','S'), ('UCU','S'),
                  ('UUU','F'), ('UUC','F'), ('UUA','L'), ('UUG','L'),
@@ -122,6 +155,11 @@ class Ribosome(BioMolecule):
         self.position = None
 
     def initiate(self, mrna):
+        """
+        Tries to bind to a given MRNA.
+
+        @type mrna: MRNA
+        """
         if not self.bound and not mrna.binding[0]:  #  no mrna bound yet and target mrna still free at pos 0
             self.bound = mrna
             self.nascent_prot = Protein("Protein_{0}".format(self.bound.id),
@@ -131,6 +169,12 @@ class Ribosome(BioMolecule):
             self.bound.binding[0] = 1
 
     def elongate(self):
+        """Elongate the new protein by the correct amino acid. Check if an
+        MRNA is bound and if ribosome can move to next codon.
+        Terminate if the ribosome reaches a STOP codon.
+
+        @type return: Protein or False
+        """
         if not self.bound: # can't elongate
             return False
         codon = self.bound[self.position:self.position+3]
@@ -147,6 +191,22 @@ class Ribosome(BioMolecule):
         return 0
 
     def terminate(self):
+        """
+        Splits the ribosome/MRNA complex and returns a protein.
+        """
         self.bound.binding[self.position/3] = 0 # bound mRNA
         self.bound = False
         return self.nascent_prot
+
+class Polymerase(BioMolecule):
+    """
+    A polymerase that can elongate nucleotide molecules. This could be used to derive special
+    RNA and DNA polymerases.
+    """
+    pass
+
+class RNAPolymeraseII(Polymerase):
+    """
+    A polymerase that generates mRNAs from DNA sequences.
+    """
+    pass
