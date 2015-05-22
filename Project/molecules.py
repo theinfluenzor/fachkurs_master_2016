@@ -6,30 +6,30 @@ class BioMolecule(object):
     A generic molecule that has basic attributes like id, name and
     mass.
 
-    @type id: int
+    @type mid: int
     @type name: str
     @type mass: float
     """
-    def __init__(self, id, name, mass=0):
-        self._id = id
+    def __init__(self, mid, name, mass=0):
+        self.__mid = mid
         self.name = name
         self.mass = mass
 
     @property
     def id(self):
-        return self._id
+        return self.__mid
 
     @property
     def name(self):
-        return self._name
+        return self.__name
 
     @name.setter
     def name(self, value):
-        self._name = value
+        self.__name = value
 
     @property
     def mass(self):
-        return self._mass
+        return self.__mass
 
     @mass.setter
     def mass(self, value):
@@ -38,7 +38,7 @@ class BioMolecule(object):
         #    not isinstance(value, int):
         #     raise Exception("mass must be numeric")
         # else:
-        self._mass = value
+        self.__mass = value
 
 
 class Polymer(BioMolecule):
@@ -46,13 +46,13 @@ class Polymer(BioMolecule):
     A polymer molecule that has a sequence attribute which is
     accessible via indexing the object.
 
-    @type id: int
+    @type mid: int
     @type name: str
     @type sequence: str
     @type mass: float
     """
-    def __init__(self, id, name, sequence, mass=0):
-        super(Polymer, self).__init__(id, name, mass)
+    def __init__(self, mid, name, sequence, mass=0):
+        super(Polymer, self).__init__(mid, name, mass)
         self._sequence = sequence
 
     def __getitem__(self, value):
@@ -71,12 +71,25 @@ class Polymer(BioMolecule):
             raise Exception("sequence must be a string")
             # TODO: check for valid nucleotides here
         self._sequence = value.upper()
-        self.calculate_mass()
+
+
+class BioMoleculeCount(BioMolecule):
+    def __init__(self, mid, name, count=0):
+        super(BioMoleculeCount, self).__init__(mid, name)
+        self.count = count
+
+    @property
+    def count(self):
+        return self.__count
+
+    @count.setter
+    def count(self, value):
+        self.__count = value
 
 
 class MRNA(Polymer):
-    def __init__(self, id, name, sequence, mass=0):
-        super(MRNA, self).__init__(id, name, sequence, mass)
+    def __init__(self, mid, name, sequence, mass=0):
+        super(MRNA, self).__init__(mid, name, sequence, mass)
         self.binding = [0]*(len(sequence)/3)
 
     def calculate_mass(self):
@@ -103,8 +116,8 @@ class Protein(Polymer):
     """
     number_of_proteins = 0
 
-    def __init__(self, id, name, sequence, mass=0):
-        super(Protein, self).__init__(id, name, sequence, mass)
+    def __init__(self, mid, name, sequence, mass=0):
+        super(Protein, self).__init__(mid, name, sequence, mass)
         self.number_of_proteins += 1
 
     def __add__(self, AS):
@@ -114,12 +127,12 @@ class Protein(Polymer):
         AA_mass = {"A": 89.0929, "R": 175.208, "N": 132.118, "D": 132.094, "C": 121.158, "Q": 146.144,
                     "E": 146.121, "G": 75.0664, "H":155.154, "I":131.172, "L": 131.172, "K": 147.195,
                     "M": 149.211, "F": 165.189, "P": 115.13, "S": 105.092, "T": 119.119, "W": 204.225,
-                    "Y":181.188, "V":117.146}
+                    "Y": 181.188, "V": 117.146}
         for aa in self.sequence:
             self.mass += AA_mass[aa]
 
 
-class Ribosome(BioMolecule):
+class Ribosome(BioMoleculeCount):
     """
     A ribosome can bind MRNA and translate it. After translation is
     finished it produces a protein.
@@ -132,78 +145,18 @@ class Ribosome(BioMolecule):
     codon ("*") translation terminates. The MRNA is detached from the
     ribosome and the finished protein is returned.
     """
-    code = dict([('UCA','S'), ('UCG','S'), ('UCC','S'), ('UCU','S'),
-                 ('UUU','F'), ('UUC','F'), ('UUA','L'), ('UUG','L'),
-                 ('UAU','Y'), ('UAC','Y'), ('UAA','*'), ('UAG','*'),
-                 ('UGU','C'), ('UGC','C'), ('UGA','*'), ('UGG','W'),
-                 ('CUA','L'), ('CUG','L'), ('CUC','L'), ('CUU','L'),
-                 ('CCA','P'), ('CCG','P'), ('CCC','P'), ('CCU','P'),
-                 ('CAU','H'), ('CAC','H'), ('CAA','Q'), ('CAG','Q'),
-                 ('CGA','R'), ('CGG','R'), ('CGC','R'), ('CGU','R'),
-                 ('AUU','I'), ('AUC','I'), ('AUA','I'), ('AUG','M'),
-                 ('ACA','T'), ('ACG','T'), ('ACC','T'), ('ACU','T'),
-                 ('AAU','N'), ('AAC','N'), ('AAA','K'), ('AAG','K'),
-                 ('AGU','S'), ('AGC','S'), ('AGA','R'), ('AGG','R'),
-                 ('GUA','V'), ('GUG','V'), ('GUC','V'), ('GUU','V'),
-                 ('GCA','A'), ('GCG','A'), ('GCC','A'), ('GCU','A'),
-                 ('GAU','D'), ('GAC','D'), ('GAA','E'), ('GAG','E'),
-                 ('GGA','G'), ('GGG','G'), ('GGC','G'), ('GGU','G')])
 
-    def __init__(self, id, name):
-        super(Ribosome, self).__init__(id, name)
-        self.bound = False
-        self.position = None
+    def __init__(self, mid, name, count=0):
+        super(Ribosome, self).__init__(mid, name, count)
 
-    def initiate(self, mrna):
-        """
-        Tries to bind to a given MRNA.
 
-        @type mrna: MRNA
-        """
-        if not self.bound and not mrna.binding[0]:  #  no mrna bound yet and target mrna still free at pos 0
-            self.bound = mrna
-            self.nascent_prot = Protein("Protein_{0}".format(self.bound.id),
-                                        "Protein_{0}".format(self.bound.id),
-                                        "")
-            self.position = 0
-            self.bound.binding[0] = 1
-
-    def elongate(self):
-        """Elongate the new protein by the correct amino acid. Check if an
-        MRNA is bound and if ribosome can move to next codon.
-        Terminate if the ribosome reaches a STOP codon.
-
-        @type return: Protein or False
-        """
-        if not self.bound: # can't elongate
-            return False
-        codon = self.bound[self.position:self.position+3]
-        aa = self.code[codon]
-
-        if aa == "*": # terminate at stop codon
-            return self.terminate()
-
-        if not self.bound.binding[self.position/3 + 1]: # if the next rna position is free
-            self.bound.binding[self.position/3] = 0
-            self.bound.binding[self.position/3+1] = 1
-            self.position += 3
-            self.nascent_prot + aa
-        return 0
-
-    def terminate(self):
-        """
-        Splits the ribosome/MRNA complex and returns a protein.
-        """
-        self.bound.binding[self.position/3] = 0 # bound mRNA
-        self.bound = False
-        return self.nascent_prot
-
-class Polymerase(BioMolecule):
+class Polymerase(BioMoleculeCount):
     """
     A polymerase that can elongate nucleotide molecules. This could be used to derive special
     RNA and DNA polymerases.
     """
     pass
+
 
 class RNAPolymeraseII(Polymerase):
     """

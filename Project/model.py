@@ -1,12 +1,15 @@
 import processes as proc
 import molecules as mol
 
-class Cell(object):
+class Model(object):
+    """
+    Initializes the states and processes for the model and lets the processes update their corresponding states.
+    """
     def __init__(self):
         self.states = {}
         
-        self.ribosomes = {'Ribo_{0}'.format(i): mol.Ribosome(i, 'Ribo_{0}'.format(i)) for i in xrange(10)}
-        self.mrnas = {'MRNA_{0}'.format(i): mol.MRNA(i, 'MRNA_{0}'.format(i), "UUUUUUUUUUAA") for i in xrange(20)}
+        self.ribosomes = {'Ribosomes': mol.Ribosome('Ribosomes', 'Ribosomes', 10)}
+        self.mrnas = {'MRNA_{0}'.format(i): mol.MRNA(i, 'MRNA_{0}'.format(i), "UUUUUUUUUUAA") for i in xrange(50)}
         self.proteins = [[] for x in xrange(20)]
         self.states.update(self.ribosomes)
         self.states.update(self.mrnas)
@@ -27,5 +30,5 @@ class Cell(object):
                 print '\r{}'.format([len(self.states[x]) for x in self.states.keys() if "Protein_" in x]),
             
 if __name__ == "__main__":
-    c = Cell()
-    c.simulate(1000, log=True)
+    c = Model()
+    c.simulate(100, log=True)
