@@ -18,7 +18,7 @@ class Process(object):
         self.enzyme_ids = enzyme_ids
         self.substrate_ids = substrate_ids
 
-    def update(self, cell):
+    def update(self, model):
         """
         Has to be implemented by child class.
         """
@@ -55,24 +55,27 @@ class Translation(Process):
     def __init__(self, id, name):
         super(Translation, self).__init__(id, name)
 
-    def update(self, cell):
-        self.ribosomes = cell.states[self.enzyme_ids[0]]
+    def update(self, model):
+        """
+        Update all mrnas and translate proteins.
+        """
+        self.ribosomes = model.states[self.enzyme_ids[0]]
         for mrna_id in self.substrate_ids:
             prot = None
-            mrna = cell.states[mrna_id]
+            mrna = model.states[mrna_id]
             if not mrna.binding[0]:
                 self.initiate(mrna)
             else:
                 prot = self.elongate(mrna)
             if isinstance(prot, molecules.Protein):
-                if prot.id in cell.states:
-                    cell.states[prot.id].append(prot)
+                if prot.id in model.states:
+                    model.states[prot.id].append(prot)
                 else:
-                    cell.states[prot.id] = [prot]
+                    model.states[prot.id] = [prot]
 
     def initiate(self, mrna):
         """
-        Tries to bind to a given MRNA. Binding probability corresponds to the ribosome count.
+        Try to bind to a given MRNA. Binding probability corresponds to the ribosome count.
 
         @type mrna: MRNA
         """
