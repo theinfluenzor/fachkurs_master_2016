@@ -90,7 +90,7 @@ class BioMoleculeCount(BioMolecule):
 class MRNA(Polymer):
     def __init__(self, mid, name, sequence, mass=0):
         super(MRNA, self).__init__(mid, name, sequence, mass)
-        self.binding = [0]*(len(sequence)/3)
+        self.binding = [0]*(len(sequence)//3)
 
     def calculate_mass(self):
         self.mass = 0

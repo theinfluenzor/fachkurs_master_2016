@@ -59,7 +59,7 @@ class Translation(Process):
         """
         Update all mrnas and translate proteins.
         """
-        self.ribosomes = model.states[self.enzyme_ids[0]]
+        self.ribosomes = model.states[list(self.enzyme_ids)[0]]
         for mrna_id in self.substrate_ids:
             prot = None
             mrna = model.states[mrna_id]
