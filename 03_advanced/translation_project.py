@@ -165,9 +165,9 @@ class Ribosome(BioMolecule):
 
 class Cell(object):
     def __init__(self):
-        self.ribosomes = [Ribosome(i, 'Ribo_{0}'.format(i)) for i in xrange(200)]
-        self.mrnas = [MRNA(i, 'MRNA_{0}'.format(i), "UUUUUUUUUUAA") for i in xrange(20)]
-        self.proteins = [[] for x in xrange(20)]
+        self.ribosomes = [Ribosome(i, 'Ribo_{0}'.format(i)) for i in range(200)]
+        self.mrnas = [MRNA(i, 'MRNA_{0}'.format(i), "UUUUUUUUUUAA") for i in range(20)]
+        self.proteins = [[] for x in range(20)]
 
     def step(self):
         for r in self.ribosomes:
@@ -179,10 +179,10 @@ class Cell(object):
                     self.proteins[prot.id].append(prot)
 
     def simulate(self, steps, p=True):
-        for s in xrange(steps):
+        for s in range(steps):
             self.step()
             if p:
-                print [len(x) for x in self.proteins]
+                print([len(x) for x in self.proteins])
             
 if __name__ == "__main__":  # the following is called if the module is executed
     # 14. Instantiate the Cell class and call the simulation method.
