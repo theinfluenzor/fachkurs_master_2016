@@ -39,7 +39,7 @@ class Model:
             self.step()
             if log:  # This could be an entry point for further logging
                 # print count of each protein to the screen
-                print('\r{}'.format([len(self.states[x]) for x in self.states.keys() if "Protein_" in x]))
+                print('\r{}'.format([len(self.states[x]) for x in self.states.keys() if "Protein_" in x]), end='')
 
 
 if __name__ == "__main__":
