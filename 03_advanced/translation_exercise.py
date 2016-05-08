@@ -29,11 +29,6 @@ class BioMolecule(object):
 
     @mass.setter
     def mass(self, value):
-        # if self.mass and \
-        #    not isinstance(value, float) or \
-        #    not isinstance(value, int):
-        #     raise Exception("mass must be numeric")
-#        else:
         self._mass = value
 
 
@@ -68,7 +63,7 @@ class Polymer(BioMolecule):
 class MRNA(Polymer):
     def __init__(self, id, name, sequence, mass=0):
         super(MRNA, self).__init__(id, name, sequence, mass)
-        self.binding = [0]*(len(sequence)/3)
+        self.binding = [0]*(len(sequence)//3)
 
     def calculate_mass(self):
         self.mass = 0
@@ -139,15 +134,15 @@ class Ribosome(BioMolecule):
         if aa == "*": # terminate at stop codon
             return self.terminate()
             
-        if not self.bound.binding[self.position/3 + 1]: # if the next rna position is free
-            self.bound.binding[self.position/3] = 0
-            self.bound.binding[self.position/3+1] = 1
+        if not self.bound.binding[self.position//3 + 1]: # if the next rna position is free
+            self.bound.binding[self.position//3] = 0
+            self.bound.binding[self.position//3+1] = 1
             self.position += 3
             self.nascent_prot + aa
         return 0
 
     def terminate(self):
-        self.bound.binding[self.position/3] = 0 # bound mRNA
+        self.bound.binding[self.position//3] = 0 # bound mRNA
         self.bound = False
         return self.nascent_prot
         
