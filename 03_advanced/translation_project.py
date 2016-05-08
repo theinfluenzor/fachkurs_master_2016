@@ -10,7 +10,7 @@ class BioMolecule(object):
     @type name: str
     @type mass: float
     """
-    def __init__(self, id, name, mass=None):
+    def __init__(self, id, name, mass=0.):
         self._id = id
         self.name = name
         self.mass = mass
@@ -79,7 +79,7 @@ class Protein(Polymer):
     number_of_proteins = 0  # init instance counter
 
     def __init__(self, id, name, sequence, mass=None):
-        super(Protein, self).__init__(id, name, sequence, mass)
+        super().__init__(id, name, sequence, mass)
         self.__class__.number_of_proteins += 1 #  increase instance counter
         self.mass = self.calculate_mass()
 
@@ -124,7 +124,7 @@ class Ribosome(BioMolecule):
                  ('GGA','G'), ('GGG','G'), ('GGC','G'), ('GGU','G')])
 
     def __init__(self, id, name):
-        super(Ribosome, self).__init__(id, name)
+        super().__init__(id, name)
         self.bound_mrna = False
         self.position = None  # position on a bound MRNA
 
