@@ -14,6 +14,37 @@ class BioMolecule(object):
         self._id = id
         self.name = name
         self.mass = mass
+    
+    @property
+    def id(self):
+        return self._id
+        
+    @property
+    def mass(self):
+        return self._mass
+
+    @property
+    def name(self):
+        return self._name
+    
+    @mass.setter
+    def mass(self, value):
+        print("setter")
+        if not isinstance(value, float):
+            raise TypeError("Mass must be Flaot.")
+        self._mass = value
+    
+    @name.setter
+    def name(self, newname):
+        if not isinstance(newname, str):
+            raise TypeError("Name must be a String.")
+        self._name = newname
+
+    @id.setter
+    def id(self, newid):
+        if not isinstance(newid, int):
+            raise TypeError("ID must be an Integer ")
+        self._id = newid
 
     # 1. Write setter and getter methods for all attributes.
     #    Use @property decorators as dicussed in the lecture
@@ -30,8 +61,13 @@ class Polymer(BioMolecule):
     @type mass: float
     """
     def __init__(self, id, name, sequence, mass=0.):
+        super().__init__(id, name, mass)
+        self.sequence = sequence
+        #self._id = id
+        #self.name = name
+        #self.mass = mass
         # 3. Initialize the parent class correctly
-        self._sequence = sequence
+        
 
     
     # 4. Write getter and setter for sequence, again check for type
@@ -47,6 +83,8 @@ class Polymer(BioMolecule):
         """
          Enables changing of sequence characters via the indexing operators.       
         """
+        if not isinstance(value, str):
+            raise TypeError("sequence must be a string.")
         self.sequence[key] = value
 
 
